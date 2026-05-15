@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solo Ad Funnel Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f4f6f9;color:#222;min-height:100vh}
+.topbar{background:#1A3A6B;color:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+.topbar h1{font-size:18px;font-weight:600}
+.topbar span{font-size:12px;opacity:0.7}
+.tabs{background:#fff;border-bottom:1px solid #ddd;display:flex;padding:0 28px}
+.tab{padding:14px 20px;font-size:14px;cursor:pointer;border-bottom:3px solid transparent;color:#666;background:none;border-top:none;border-left:none;border-right:none;border-bottom:3px solid transparent}
+.tab.active{color:#1A3A6B;border-bottom-color:#E94560;font-weight:600}
+.main{max-width:900px;margin:28px auto;padding:0 20px}
+.card{background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:24px;margin-bottom:20px}
+h2{font-size:17px;font-weight:600;margin-bottom:16px;color:#1A3A6B}
+h3{font-size:14px;font-weight:600;margin:16px 0 8px;color:#E94560;text-transform:uppercase;letter-spacing:0.04em}
+label{font-size:13px;color:#666;display:block;margin-bottom:4px}
+input{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:12px;font-family:Arial,sans-serif}
+input:focus{outline:none;border-color:#1A3A6B}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.btn{background:#1A3A6B;color:#fff;border:none;border-radius:7px;padding:11px 22px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
+.btn:hover{background:#E94560}
+.btn-sm{background:#1A3A6B;color:#fff;border:none;border-radius:5px;padding:6px 14px;font-size:12px;cursor:pointer}
+.btn-sm:hover{background:#E94560}
+.btn-outline{background:#fff;color:#1A3A6B;border:1px solid #1A3A6B;border-radius:7px;padding:10px 22px;font-size:14px;cursor:pointer}
+.link-row{display:flex;align-items:center;gap:10px;background:#f8f9fb;border-radius:7px;padding:10px 14px;margin-bottom:8px;border:1px solid #eee}
+.link-label{font-size:13px;font-weight:600;min-width:140px;color:#1A3A6B}
+.link-url{font-size:12px;color:#888;font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.metric{background:#f4f6f9;border-radius:8px;padding:16px;text-align:center}
+.metric-val{font-size:26px;font-weight:700;color:#1A3A6B;margin-top:4px}
+.metric-label{font-size:12px;color:#888}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.alert{padding:10px 14px;border-radius:7px;font-size:13px;margin-bottom:12px}
+.alert-success{background:#e6f4ea;color:#2e7d32}
+.alert-info{background:#e3f0fb;color:#1A3A6B}
+.bar-wrap{background:#eee;border-radius:6px;height:28px;margin-bottom:6px;overflow:hidden}
+.bar{height:28px;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:600;color:#fff;transition:width 0.5s}
+.campaign-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0;cursor:pointer}
+.campaign-row:hover{opacity:0.75}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+.badge-green{background:#e6f4ea;color:#2e7d32}
+.badge-blue{background:#e3f0fb;color:#1A3A6B}
+select{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:12px;font-family:Arial,sans-serif}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>Solo Ad IQ System &mdash; Funnel Tracker</h1>
+  <span id="active-label">No campaign selected</span>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('setup')">New Campaign</button>
+  <button class="tab" onclick="showTab('links')">Tracking Links</button>
+  <button class="tab" onclick="showTab('dashboard')">Dashboard</button>
+  <button class="tab" onclick="showTab('export')">Export to Analyzer</button>
+</div>
+<div class="main">
+
+<!-- SETUP -->
+<div id="tab-setup">
+  <div class="card">
+    <h2>Create a new campaign</h2>
+    <div class="grid2">
+      <div><label>Campaign name *</label><input id="s-name" placeholder="e.g. Jimmy List Biz Opp May 14"></div>
+      <div><label>Vendor name *</label><input id="s-vendor" placeholder="e.g. TrafficForMe"></div>
+    </div>
+    <div class="grid2">
+      <div><label>Clicks ordered</label><input id="s-ordered" type="number" placeholder="500"></div>
+      <div><label>Solo ad cost ($)</label><input id="s-cost" type="number" placeholder="200"></div>
+    </div>
+    <div class="grid2">
+      <div><label>Opt-in page URL</label><input id="s-optin" placeholder="https://yourpage.com/optin"></div>
+      <div><label>Bridge page URL</label><input id="s-bridge" placeholder="https://yourpage.com/bridge"></div>
+    </div>
+    <div id="s-alert" class="alert alert-success" style="display:none"></div>
+    <button class="btn" onclick="createCampaign()">Generate tracking links &rarr;</button>
+  </div>
+  <div class="card" id="camp-list-card" style="display:none">
+    <h2>Your campaigns</h2>
+    <div id="camp-list"></div>
+  </div>
+</div>
+
+<!-- LINKS -->
+<div id="tab-links" style="display:none">
+  <div class="card" id="links-none"><p style="color:#888;font-size:14px">Create a campaign first.</p></div>
+  <div id="links-content" style="display:none">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h2 style="margin:0">Your tracking links</h2>
+        <span style="font-size:12px;color:#888">Copy each link and place it at the right stage</span>
+      </div>
+      <h3>Funnel pages</h3>
+      <div id="page-links"></div>
+      <h3>Email sequence (paste inside each email)</h3>
+      <div id="email-links"></div>
+    </div>
+    <div class="card" style="background:#e3f0fb;border-color:#b3d4f0">
+      <p style="font-size:13px;color:#1A3A6B"><strong>How to use:</strong> Give the opt-in page link to your solo ad vendor. Drop each email link inside the matching email in your autoresponder. When the campaign ends, go to Dashboard, fill in your opt-ins and tier 1%, then Export to Analyzer.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="tab-dashboard" style="display:none">
+  <div class="card" id="dash-none"><p style="color:#888;font-size:14px">Create a campaign first.</p></div>
+  <div id="dash-content" style="display:none">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h2 style="margin:0">Click overview</h2>
+        <button class="btn-sm" onclick="loadStats()">Refresh</button>
+      </div>
+      <div class="grid4" id="kpi-grid"></div>
+      <h3>Manual entry (from vendor + autoresponder)</h3>
+      <div class="grid2">
+        <div><label>Total opt-ins</label><input id="d-optins" type="number" placeholder="e.g. 142" oninput="updateManual()"></div>
+        <div><label>Tier 1 % (from vendor)</label><input id="d-tier1" type="number" placeholder="e.g. 78" oninput="updateManual()"></div>
+      </div>
+      <div class="grid2">
+        <div><label>Front-end sales</label><input id="d-sales" type="number" placeholder="e.g. 4" oninput="updateManual()"></div>
+        <div><label>Front-end revenue ($)</label><input id="d-revenue" type="number" placeholder="e.g. 197" oninput="updateManual()"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Funnel drop-off</h2>
+      <div id="funnel-bars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT -->
+<div id="tab-export" style="display:none">
+  <div class="card" id="export-none"><p style="color:#888;font-size:14px">Create a campaign first.</p></div>
+  <div id="export-content" style="display:none">
+    <div class="card">
+      <h2>Export to Analyzer</h2>
+      <p style="font-size:13px;color:#666;margin-bottom:16px">Copy these numbers into your Solo Ad IQ Analyzer to get your AI diagnosis.</p>
+      <div id="export-table"></div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn" onclick="copyData()" style="flex:1">Copy all data</button>
+        <button class="btn-outline" onclick="downloadCSV()">Download CSV</button>
+      </div>
+      <div id="copy-alert" class="alert alert-success" style="display:none;margin-top:8px">Copied!</div>
+    </div>
+    <div class="card">
+      <h2>Open your Analyzer</h2>
+      <p style="font-size:13px;color:#666;margin-bottom:16px">Paste the data into the Analyzer form to get your AI-powered campaign diagnosis.</p>
+      <button class="btn" onclick="window.open('https://solo-ad-analyzer-production.up.railway.app','_blank')">Open Solo Ad Analyzer &rarr;</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+var state={campaigns:[],active:null,stats:[],manual:{optins:0,tier1:0,sales:0,revenue:0}};
+function uid(){return Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)}
+function baseUrl(){return window.location.origin+'/t/'}
+
+async function createCampaign(){
+  var name=document.getElementById('s-name').value.trim();
+  var vendor=document.getElementById('s-vendor').value.trim();
+  if(!name||!vendor){alert('Please enter campaign name and vendor name.');return;}
+  var id=uid();
+  var camp={id,name,vendor,
+    clicks_ordered:parseInt(document.getElementById('s-ordered').value)||0,
+    cost:parseFloat(document.getElementById('s-cost').value)||0,
+    optin_url:document.getElementById('s-optin').value.trim(),
+    bridge_url:document.getElementById('s-bridge').value.trim()
+  };
+  try{
+    await fetch('/api/campaigns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(camp)});
+  }catch(e){}
+  state.campaigns.unshift(camp);
+  state.active=camp;
+  state.manual={optins:0,tier1:0,sales:0,revenue:0};
+  updateActiveLabel();
+  renderCampList();
+  var al=document.getElementById('s-alert');
+  al.textContent='Campaign created! Go to Tracking Links to copy your links.';
+  al.style.display='block';
+  setTimeout(()=>al.style.display='none',3000);
+}
+
+function updateActiveLabel(){
+  document.getElementById('active-label').textContent=state.active?('Active: '+state.active.name):'No campaign selected';
+}
+
+function renderCampList(){
+  var card=document.getElementById('camp-list-card');
+  var list=document.getElementById('camp-list');
+  if(!state.campaigns.length){card.style.display='none';return;}
+  card.style.display='block';
+  list.innerHTML=state.campaigns.map(c=>{
+    var isActive=state.active&&state.active.id===c.id;
+    return '<div class="campaign-row" onclick="selectCamp(\''+c.id+'\')">'+
+      '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+c.name+'</div>'+
+      '<div style="font-size:12px;color:#888">'+c.vendor+'</div></div>'+
+      (isActive?'<span class="badge badge-green">Active</span>':'<span class="badge badge-blue">Select</span>')+
+      '</div>';
+  }).join('');
+}
+
+function selectCamp(id){
+  state.active=state.campaigns.find(c=>c.id===id);
+  state.manual={optins:0,tier1:0,sales:0,revenue:0};
+  updateActiveLabel();
+  renderCampList();
+}
+
+function showTab(tab){
+  ['setup','links','dashboard','export'].forEach((t,i)=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
+    document.querySelectorAll('.tab')[i].classList.toggle('active',t===tab);
+  });
+  if(tab==='links')renderLinks();
+  if(tab==='dashboard'){loadStats();}
+  if(tab==='export')renderExport();
+}
+
+function renderLinks(){
+  var c=state.active;
+  document.getElementById('links-none').style.display=c?'none':'block';
+  document.getElementById('links-content').style.display=c?'block':'none';
+  if(!c)return;
+  var base=baseUrl()+c.id+'/';
+  document.getElementById('page-links').innerHTML=[
+    {label:'Opt-in page',key:'optin'},
+    {label:'Bridge page',key:'bridge'}
+  ].map(s=>{
+    var url=base+s.key;
+    return '<div class="link-row"><span class="link-label">'+s.label+'</span>'+
+      '<span class="link-url">'+url+'</span>'+
+      '<button class="btn-sm" onclick="copyLink(\''+url+'\',this)">Copy</button></div>';
+  }).join('');
+  document.getElementById('email-links').innerHTML=[1,2,3,4,5,6,7].map(n=>{
+    var url=base+'email'+n;
+    return '<div class="link-row"><span class="link-label">Email '+n+'</span>'+
+      '<span class="link-url">'+url+'</span>'+
+      '<button class="btn-sm" onclick="copyLink(\''+url+'\',this)">Copy</button></div>';
+  }).join('');
+}
+
+function copyLink(url,btn){
+  navigator.clipboard.writeText(url).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500);});
+}
+
+async function loadStats(){
+  var c=state.active;
+  document.getElementById('dash-none').style.display=c?'none':'block';
+  document.getElementById('dash-content').style.display=c?'block':'none';
+  if(!c)return;
+  try{
+    var r=await fetch('/api/stats/'+c.id);
+    state.stats=await r.json();
+  }catch(e){state.stats=[];}
+  renderKPIs();
+  renderFunnel();
+}
+
+function getStageCount(stage,unique){
+  var row=state.stats.find(r=>r.stage===stage);
+  if(!row)return 0;
+  return unique?row.unique_clicks:row.total;
+}
+
+function renderKPIs(){
+  var c=state.active;
+  if(!c)return;
+  var clicks=getStageCount('optin',false);
+  var optins=state.manual.optins;
+  var optinRate=clicks>0&&optins>0?((optins/clicks)*100).toFixed(1)+'%':'—';
+  var cpl=optins>0&&c.cost>0?'$'+(c.cost/optins).toFixed(2):'—';
+  var epc=clicks>0&&state.manual.revenue>0?'$'+(state.manual.revenue/clicks).toFixed(3):'—';
+  document.getElementById('kpi-grid').innerHTML=[
+    {label:'Clicks to opt-in',val:clicks},
+    {label:'Opt-in rate',val:optinRate},
+    {label:'Cost per lead',val:cpl},
+    {label:'EPC',val:epc}
+  ].map(k=>'<div class="metric"><div class="metric-label">'+k.label+'</div><div class="metric-val">'+k.val+'</div></div>').join('');
+}
+
+function updateManual(){
+  state.manual.optins=parseInt(document.getElementById('d-optins').value)||0;
+  state.manual.tier1=parseFloat(document.getElementById('d-tier1').value)||0;
+  state.manual.sales=parseInt(document.getElementById('d-sales').value)||0;
+  state.manual.revenue=parseFloat(document.getElementById('d-revenue').value)||0;
+  renderKPIs();
+  renderFunnel();
+}
+
+function renderFunnel(){
+  var stages=[
+    {label:'Clicks to opt-in page',count:getStageCount('optin',false),color:'#1A3A6B'},
+    {label:'Opt-ins',count:state.manual.optins,color:'#1D9E75'},
+    {label:'Bridge page clicks',count:getStageCount('bridge',false),color:'#639922'},
+    {label:'Email clicks (total)',count:[1,2,3,4,5,6,7].reduce((a,n)=>a+getStageCount('email'+n,false),0),color:'#BA7517'}
+  ];
+  var max=Math.max(...stages.map(s=>s.count),1);
+  var html=stages.map((s,i)=>{
+    var pct=Math.round((s.count/max)*100);
+    var drop='';
+    if(i>0){var prev=stages[i-1].count;if(prev>0&&s.count<prev){drop='<span style="font-size:11px;color:#c0392b;margin-left:8px">&darr; '+(Math.round(((prev-s.count)/prev)*100))+'% drop</span>';}}
+    return '<div style="margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+      '<span style="font-size:13px;min-width:180px;color:#444">'+s.label+'</span>'+
+      '<span style="font-size:14px;font-weight:700">'+s.count+'</span>'+drop+'</div>'+
+      '<div class="bar-wrap"><div class="bar" style="width:'+pct+'%;background:'+s.color+'"></div></div></div>';
+  }).join('');
+  document.getElementById('funnel-bars').innerHTML=html||'<p style="color:#888;font-size:13px">No clicks logged yet. Share your tracking links to start tracking.</p>';
+}
+
+function renderExport(){
+  var c=state.active;
+  document.getElementById('export-none').style.display=c?'none':'block';
+  document.getElementById('export-content').style.display=c?'block':'none';
+  if(!c)return;
+  var emailTotal=[1,2,3,4,5,6,7].reduce((a,n)=>a+getStageCount('email'+n,false),0);
+  var rows=[
+    ['Campaign name',c.name],
+    ['Vendor name',c.vendor],
+    ['Clicks ordered',c.clicks_ordered||''],
+    ['Clicks received (opt-in page)',getStageCount('optin',false)],
+    ['Unique clicks',getStageCount('optin',true)],
+    ['Bridge page clicks',getStageCount('bridge',false)],
+    ['Total email clicks',emailTotal],
+    ['Total opt-ins',state.manual.optins],
+    ['Tier 1 %',state.manual.tier1],
+    ['Solo ad cost ($)',c.cost],
+    ['Front-end sales',state.manual.sales],
+    ['Front-end revenue ($)',state.manual.revenue]
+  ];
+  [1,2,3,4,5,6,7].forEach(n=>rows.push(['Email '+n+' clicks',getStageCount('email'+n,false)]));
+  document.getElementById('export-table').innerHTML='<table style="width:100%;font-size:13px;border-collapse:collapse">'+
+    rows.map(r=>'<tr><td style="padding:7px 0;border-bottom:1px solid #f0f0f0;color:#666;width:55%">'+r[0]+'</td>'+
+      '<td style="padding:7px 0;border-bottom:1px solid #f0f0f0;font-weight:700;text-align:right">'+r[1]+'</td></tr>').join('')+'</table>';
+  document.getElementById('export-table')._rows=rows;
+}
+
+function copyData(){
+  var rows=document.getElementById('export-table')._rows;
+  if(!rows)return;
+  var text=rows.map(r=>r[0]+': '+r[1]).join('\n');
+  navigator.clipboard.writeText(text).then(()=>{
+    var al=document.getElementById('copy-alert');
+    al.style.display='block';
+    setTimeout(()=>al.style.display='none',2000);
+  });
+}
+
+function downloadCSV(){
+  var rows=document.getElementById('export-table')._rows;
+  if(!rows)return;
+  var csv='Field,Value\n'+rows.map(r=>'"'+r[0]+'","'+r[1]+'"').join('\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='solo-ad-campaign.csv';a.click();
+}
+</script>
+</body>
+</html>
